@@ -5,14 +5,101 @@ Parameters:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
     Type: AWS::EC2::KeyPair::KeyName
     ConstraintDescription: must be the name of an existing EC2 KeyPair.
-
+  DBName:
+    Default: Poultry
+    Description: MySQL database name
+    Type: String
+    MinLength: '1'
+    MaxLength: '64'
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+  DBUsername:
+    Default: Poultry
+    NoEcho: 'true'
+    Description: Username for MySQL database access
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+  DBPassword:
+    Default: Poultry123456
+    NoEcho: 'true'
+    Description: Password for MySQL database access
+    Type: String
+    MinLength: '8'
+    MaxLength: '41'
+    AllowedPattern: "[a-zA-Z0-9]*"
+    ConstraintDescription: must contain only alphanumeric characters.
+  BucketName:
+    Default: eggs-12345678910
+    Type: String
 Resources:
+  FilesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+  DBSecurityGroup:
+    Type: AWS::RDS::DBSecurityGroup
+    Properties:
+      GroupDescription: Grant database access to web server
+      DBSecurityGroupIngress:
+        EC2SecurityGroupName:
+          Ref: WebDMZ
+  WebDMZ:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SSH and WEB access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+  Database:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: '20'
+      AllowMajorVersionUpgrade: 'false'
+      AutoMinorVersionUpgrade: 'true'
+      DBInstanceClass: db.t2.micro
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      DBName: !Ref DBName
+      Engine: mysql
+      EngineVersion: 5.7.26
+      DBSecurityGroups:
+        - Ref: DBSecurityGroup
+  RDSAcessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: '/'
+      Policies:
+        - PolicyName: s3
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:Get*
+                Resource:
+                  - !Sub arn:aws:s3:::${BucketName}/*
   WebAppProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: "/"
       Roles:
-        - ec2-demo
+        - !Ref RDSAcessRole
   WebApp:
       Type: AWS::EC2::Instance
       Metadata:
@@ -35,6 +122,7 @@ Resources:
               /var/www/poultry: "https://github.com/jkapuscik2/poultry/zipball/master"
       Properties:
         InstanceType: t2.micro
+        IamInstanceProfile: !Ref WebAppProfile
         SecurityGroups:
           - Ref: WebDMZ
         KeyName:
@@ -42,11 +130,11 @@ Resources:
         ImageId: ami-02df9ea15c1778c9c
         UserData:
           Fn::Base64:
-            !Sub |
+            !Sub
+            - |
                 #!/bin/bash
 
                 sudo apt-get -y update
-                echo "dupa" >> /home/ubuntu/start.log
                 sudo apt-get -y remove apache2
                 cd /home/ubuntu
                 mkdir aws-cfn-bootstrap-latest
@@ -63,20 +151,24 @@ Resources:
                 sudo chown -R www-data:www-data /var/www/poultry/vendor
                 sudo chown -R www-data:www-data /var/www/poultry/storage
                 cp /var/www/poultry/infrastructure/default /etc/nginx/sites-available/default
+                cd /var/www/poultry
+                cp .env.example .env
+                sed -i s/DB_HOST=127.0.0.1/DB_HOST=${DBEndpoint}/g .env
+                sed -i s/DB_USERNAME=/DB_USERNAME=${DB_USERNAME}/g .env
+                sed -i s/DB_PASSWORD=/DB_PASSWORD=${DB_PASSWORD}/g .env
+                sed -i s/DB_DATABASE=/DB_DATABASE=${DB_DATABASE}/g .env
+                sed -i s/AWS_BUCKET=/AWS_BUCKET=${AWS_BUCKET}/g .env
+                php artisan migrate
                 service nginx restart
-  WebDMZ:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: SSH and WEB
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: '22'
-          ToPort: '22'
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: '80'
-          ToPort: '80'
-          CidrIp: 0.0.0.0/0
+                cfn-signal --exit-code $? --stack ${AWS::StackName} --resource WebApp --region ${AWS::Region} -r "Webserver created"
+            - DBEndpoint:
+                Fn::GetAtt:
+                  - Database
+                  - Endpoint.Address
+              DB_USERNAME: !Ref DBName
+              DB_DATABASE: !Ref DBUsername
+              DB_PASSWORD: !Ref DBPassword
+              AWS_BUCKET: !Ref BucketName
 
 Outputs:
   InstanceId:
@@ -101,3 +193,9 @@ Outputs:
       Fn::GetAtt:
         - WebApp
         - PublicIp
+  DBEndpoint:
+    Description: Connection endpoint of RDS
+    Value:
+      Fn::GetAtt:
+        - Database
+        - Endpoint.Address

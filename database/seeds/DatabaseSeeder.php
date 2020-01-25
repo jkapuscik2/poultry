@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class DatabaseSeeder extends Seeder
 {
@@ -32,5 +33,9 @@ class DatabaseSeeder extends Seeder
             'photo' => "demo4.jpg",
             'content' => "The Polish or Poland is a European breed of crested chickens known for its remarkable crest of feathers. The oldest accounts of these birds come from The Netherlands; their exact origins are unknown, however."
         ]);
+        Storage::disk('s3')->put("demo.png", Storage::get("demo.png"), 'public');
+        Storage::disk('s3')->put("demo2.png",  Storage::get("demo2.png"), 'public');
+        Storage::disk('s3')->put("demo3.jpg",  Storage::get("demo3.jpg"), 'public');
+        Storage::disk('s3')->put("demo4.jpg",  Storage::get("demo4.jpg"), 'public');
     }
 }
