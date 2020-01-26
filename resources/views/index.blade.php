@@ -34,7 +34,7 @@
 <div class="container">
     <div class="row">
         @foreach ($models as $model)
-        <div class="col-6">
+        <div class="col-lg-6 col-12">
             <div class="card shadow-lg rounded-lg m-3">
                 <img class="card-img-top" src="{{ $model->photoUrl() }}" alt="{{ $model->name }}">
                 <div class="card-body">
