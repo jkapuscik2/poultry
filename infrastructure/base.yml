@@ -14,7 +14,7 @@ Parameters:
     AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
     ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
   DBUsername:
-    Default: Poultry
+    Default: admin
     NoEcho: 'true'
     Description: Username for MySQL database access
     Type: String
@@ -91,7 +91,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - s3:Get*
+                  - "*"
                 Resource:
                   - !Sub arn:aws:s3:::${BucketName}/*
   WebAppProfile:
@@ -100,8 +100,8 @@ Resources:
       Path: "/"
       Roles:
         - !Ref RDSAcessRole
-  WebApp:
-      Type: AWS::EC2::Instance
+  WebAppConfiguration:
+      Type: AWS::AutoScaling::LaunchConfiguration
       Metadata:
         AWS::CloudFormation::Init:
           config:
@@ -141,7 +141,7 @@ Resources:
                 curl https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz | tar xz -C aws-cfn-bootstrap-latest --strip-components 1
                 apt-get install python-pip -y
                 pip install aws-cfn-bootstrap-latest/
-                cfn-init --verbose --stack ${AWS::StackName} --resource WebApp --region ${AWS::Region}
+                cfn-init --verbose --stack ${AWS::StackName} --resource WebAppConfiguration --region ${AWS::Region}
                 cd /var/www/poultry
                 export COMPOSER_HOME="$HOME/.config/composer";
                 composer install --optimize-autoloader --no-dev
@@ -153,15 +153,14 @@ Resources:
                 cp /var/www/poultry/infrastructure/default /etc/nginx/sites-available/default
                 cd /var/www/poultry
                 cp .env.example .env
-                sed -i s/DB_HOST=127.0.0.1/DB_HOST=${DBEndpoint}/g .env
+                sed -i s/DB_HOST=127.0.0.1/DB_HOST=${DB_ENDPOINT}/g .env
                 sed -i s/DB_USERNAME=/DB_USERNAME=${DB_USERNAME}/g .env
                 sed -i s/DB_PASSWORD=/DB_PASSWORD=${DB_PASSWORD}/g .env
                 sed -i s/DB_DATABASE=/DB_DATABASE=${DB_DATABASE}/g .env
                 sed -i s/AWS_BUCKET=/AWS_BUCKET=${AWS_BUCKET}/g .env
-                php artisan migrate
+                sed -i s/AWS_DEFAULT_REGION=/AWS_DEFAULT_REGION=${AWS::Region}/g .env
                 service nginx restart
-                cfn-signal --exit-code $? --stack ${AWS::StackName} --resource WebApp --region ${AWS::Region} -r "Webserver created"
-            - DBEndpoint:
+            - DB_ENDPOINT:
                 Fn::GetAtt:
                   - Database
                   - Endpoint.Address
@@ -169,33 +168,103 @@ Resources:
               DB_DATABASE: !Ref DBUsername
               DB_PASSWORD: !Ref DBPassword
               AWS_BUCKET: !Ref BucketName
-
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      AvailabilityZones:
+        Fn::GetAZs:
+          !Ref AWS::Region
+      HealthCheck:
+        HealthyThreshold: '10'
+        Interval: '30'
+        Target: HTTP:80/
+        Timeout: '5'
+        UnhealthyThreshold: '2'
+      ConnectionDrainingPolicy:
+        Enabled: 'true'
+        Timeout: '300'
+      ConnectionSettings:
+        IdleTimeout: '60'
+      CrossZone: 'true'
+      Listeners:
+        - InstancePort: '80'
+          LoadBalancerPort: '80'
+          Protocol: HTTP
+          InstanceProtocol: HTTP
+  WebServerGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      LaunchConfigurationName: !Ref WebAppConfiguration
+      AvailabilityZones:
+        Fn::GetAZs:
+          !Ref AWS::Region
+      MinSize: 1
+      MaxSize: 10
+      LoadBalancerNames:
+        - !Ref LoadBalancer
+  WebServerScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      AutoScalingGroupName:
+        Ref: WebServerGroup
+      Cooldown: '60'
+      ScalingAdjustment: '1'
+  WebServerScaleDownPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AdjustmentType: ChangeInCapacity
+      AutoScalingGroupName:
+        Ref: WebServerGroup
+      Cooldown: '60'
+      ScalingAdjustment: "-1"
+  CPUAlarmHigh:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Scale-up if CPU > 40% for 2 minutes
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: '60'
+      EvaluationPeriods: '2'
+      Threshold: '40'
+      AlarmActions:
+        - Ref: WebServerScaleUpPolicy
+      Dimensions:
+        - Name: AutoScalingGroupName
+          Value:
+            Ref: WebServerGroup
+      ComparisonOperator: GreaterThanThreshold
+  CPUAlarmLow:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Scale-down if CPU < 20% for 2 minutes
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: '60'
+      EvaluationPeriods: '2'
+      Threshold: '30'
+      AlarmActions:
+        - Ref: WebServerScaleDownPolicy
+      Dimensions:
+        - Name: AutoScalingGroupName
+          Value:
+            Ref: WebServerGroup
+      ComparisonOperator: LessThanThreshold
 Outputs:
-  InstanceId:
-    Description: InstanceId of the newly created EC2 instance
-    Value:
-      Ref: WebApp
-  AZ:
-    Description: Availability Zone of the newly created EC2 instance
-    Value:
-      Fn::GetAtt:
-        - WebApp
-        - AvailabilityZone
-  PublicDNS:
-    Description: Public DNSName of the newly created EC2 instance
-    Value:
-      Fn::GetAtt:
-        - WebApp
-        - PublicDnsName
-  PublicIP:
-    Description: Public IP address of the newly created EC2 instance
-    Value:
-      Fn::GetAtt:
-        - WebApp
-        - PublicIp
   DBEndpoint:
     Description: Connection endpoint of RDS
     Value:
       Fn::GetAtt:
         - Database
         - Endpoint.Address
+  URL:
+    Description: The URL of the load balancer
+    Value:
+      Fn::Join:
+        - ''
+        - - http://
+          - Fn::GetAtt:
+              - LoadBalancer
+              - DNSName

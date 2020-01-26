@@ -26,7 +26,7 @@
 
     .footer {
         width: 100%;
-        line-height: 4rem;
+        line-height: 2rem;
         background-color: #6f828311;
     }
 </style>
@@ -49,7 +49,8 @@
 
 <footer class="footer mt-5">
     <div class="container">
-        <span data-server-name class="text-muted">Server: {{ $instanceId }}</span>
+        <div class="text-muted">Server: {{ $instanceId }}</div>
+        <div class="text-muted">Request: {{ $requestId }}</div>
     </div>
 </footer>
 </body>

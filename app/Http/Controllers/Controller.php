@@ -15,7 +15,8 @@ class Controller extends BaseController
         return View("index",
             [
                 "models" => $models,
-                "instanceId" => $this->getInstanceId()
+                "instanceId" => $this->getInstanceId(),
+                "requestId" => $this->getRequestId()
             ]);
     }
 
@@ -27,4 +28,10 @@ class Controller extends BaseController
             return "local";
         }
     }
+
+    private function getRequestId(): string
+    {
+        return password_hash(str_repeat(uniqid(), 1000), PASSWORD_BCRYPT);
+    }
+
 }

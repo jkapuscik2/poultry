@@ -43,14 +43,14 @@ fi
 if [  "$1" == "create" ]
 then
     echo "Creating stack: $2"
-    aws cloudformation create-stack --stack-name "$2" --template-body file://base.yml --capabilities CAPABILITY_IAM --parameters ParameterKey=KeyName,ParameterValue="$3"
+    aws cloudformation create-stack --stack-name "$2" --template-body file://infrastructure/base.yml --capabilities CAPABILITY_IAM --parameters ParameterKey=KeyName,ParameterValue="$3"
     #  ParameterKey=DatabaseName,ParameterValue="$4" ParameterKey=DatabaseUsername,ParameterValue="$5" ParameterKey=DatabaseUserPassword,ParameterValue="$6" ParameterKey=BucketName,ParameterValue="$7"
 fi
 
 if [  "$1" == "update" ]
 then
     echo "Updating stack: $2"
-    aws cloudformation update-stack --stack-name "$2" --template-body file://base.yml --capabilities CAPABILITY_IAM --parameters ParameterKey=KeyName,ParameterValue="$3"
+    aws cloudformation update-stack --stack-name "$2" --template-body file://infrastructure/base.yml --capabilities CAPABILITY_IAM --parameters ParameterKey=KeyName,ParameterValue="$3"
     # ParameterKey=DatabaseName,ParameterValue="$4" ParameterKey=DatabaseUsername,ParameterValue="$5" ParameterKey=DatabaseUserPassword,ParameterValue="$6" ParameterKey=BucketName,ParameterValue="$7"
 fi
 
