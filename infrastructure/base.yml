@@ -6,7 +6,7 @@ Parameters:
     Type: AWS::EC2::KeyPair::KeyName
     ConstraintDescription: must be the name of an existing EC2 KeyPair.
   DBName:
-    Default: Poultry
+    Default: PoultryDB
     Description: MySQL database name
     Type: String
     MinLength: '1'
@@ -23,7 +23,7 @@ Parameters:
     AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
     ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
   DBPassword:
-    Default: Poultry123456
+    Default: admin123456
     NoEcho: 'true'
     Description: Password for MySQL database access
     Type: String
@@ -32,7 +32,7 @@ Parameters:
     AllowedPattern: "[a-zA-Z0-9]*"
     ConstraintDescription: must contain only alphanumeric characters.
   BucketName:
-    Default: eggs-12345678910
+    Default: eggs-eggs-1234
     Type: String
 Resources:
   FilesBucket:
@@ -164,8 +164,8 @@ Resources:
                 Fn::GetAtt:
                   - Database
                   - Endpoint.Address
-              DB_USERNAME: !Ref DBName
-              DB_DATABASE: !Ref DBUsername
+              DB_USERNAME: !Ref DBUsername
+              DB_DATABASE: !Ref DBName
               DB_PASSWORD: !Ref DBPassword
               AWS_BUCKET: !Ref BucketName
   LoadBalancer:
@@ -178,8 +178,8 @@ Resources:
         HealthyThreshold: '10'
         Interval: '30'
         Target: HTTP:80/
-        Timeout: '5'
-        UnhealthyThreshold: '2'
+        Timeout: 10
+        UnhealthyThreshold: 2
       ConnectionDrainingPolicy:
         Enabled: 'true'
         Timeout: '300'
@@ -221,13 +221,13 @@ Resources:
   CPUAlarmHigh:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: Scale-up if CPU > 40% for 2 minutes
+      AlarmDescription: Scale-up if CPU > 40% for 1 minute
       MetricName: CPUUtilization
       Namespace: AWS/EC2
       Statistic: Average
-      Period: '60'
-      EvaluationPeriods: '2'
-      Threshold: '40'
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 40
       AlarmActions:
         - Ref: WebServerScaleUpPolicy
       Dimensions:
@@ -238,13 +238,13 @@ Resources:
   CPUAlarmLow:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: Scale-down if CPU < 20% for 2 minutes
+      AlarmDescription: Scale-down if CPU < 20% for 1 minute
       MetricName: CPUUtilization
       Namespace: AWS/EC2
       Statistic: Average
-      Period: '60'
-      EvaluationPeriods: '2'
-      Threshold: '30'
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 20
       AlarmActions:
         - Ref: WebServerScaleDownPolicy
       Dimensions:
