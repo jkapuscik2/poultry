@@ -16,7 +16,7 @@ In order to deploy application to AWS you can use manage.sh script with approper
 | `DatabaseName` | `string` | Name of RDS database. Default: "PoultryDB" |
 | `DatabaseUsername` | `string` | Name of RDS database admin user. Default: "admin" |
 | `DatabaseUserPassword` | `string` | Name CF stack. Default: "admin123456" |
-| `BucketName` | `string` | Name of S3 bucket. **Warning** Name needs to be unique in whole AWS. Default "eggs-eggs-1234" |
+| `BucketName` | `string` | Name of S3 bucket. **Warning**. Name needs to be unique in whole AWS. Default "eggs-eggs-1234" |
 
 Parameters have to provided in proper order:
 
@@ -31,3 +31,5 @@ Database migration:
 
 Database seeding:
 `php artisan db:seed`
+
+![Screenshot](screenshot.png?raw=true "Screenshot")
