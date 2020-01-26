@@ -175,20 +175,15 @@ Resources:
         Fn::GetAZs:
           !Ref AWS::Region
       HealthCheck:
-        HealthyThreshold: '10'
-        Interval: '30'
+        HealthyThreshold: 5
+        Interval: 20
         Target: HTTP:80/
         Timeout: 10
         UnhealthyThreshold: 2
-      ConnectionDrainingPolicy:
-        Enabled: 'true'
-        Timeout: '300'
-      ConnectionSettings:
-        IdleTimeout: '60'
       CrossZone: 'true'
       Listeners:
-        - InstancePort: '80'
-          LoadBalancerPort: '80'
+        - InstancePort: 80
+          LoadBalancerPort: 80
           Protocol: HTTP
           InstanceProtocol: HTTP
   WebServerGroup:
