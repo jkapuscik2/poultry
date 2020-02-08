@@ -8,7 +8,7 @@ fi
 
 if [  "$1" == "help" ]
 then
-    echo "Avalibale commands: crete, update, delete, help"
+    echo "Avalibale commands: create, update, delete, help"
     echo "Command params:"
     echo "1.  Command - name of command | Required"
     echo "2.  StackName - name CF stack | Required"
@@ -69,16 +69,15 @@ then
     echo "BucketName not provided. Using default '$DefaultBucketName'"
 fi
 
-
 if [  "$1" == "create" ]
 then
     echo "Creating stack: $2"
-    aws cloudformation create-stack --stack-name "$2" --template-body file://infrastructure/base.yml --capabilities CAPABILITY_IAM --parameters ParameterKey=KeyName,ParameterValue="$3" ParameterKey=DatabaseName,ParameterValue="$DatabaseName" ParameterKey=DatabaseUsername,ParameterValue="$DatabaseUsername" ParameterKey=DatabaseUserPassword,ParameterValue="$DatabaseUserPassword" ParameterKey=BucketName,ParameterValue="$BucketName"
+    aws cloudformation create-stack --stack-name "$2" --template-body file://infrastructure/base.yml --capabilities CAPABILITY_IAM --parameters ParameterKey=KeyName,ParameterValue="$3" ParameterKey=DBName,ParameterValue="$DatabaseName" ParameterKey=DBUsername,ParameterValue="$DatabaseUsername" ParameterKey=DBPassword,ParameterValue="$DatabaseUserPassword" ParameterKey=BucketName,ParameterValue="$BucketName"
 fi
 
 if [  "$1" == "update" ]
 then
     echo "Updating stack: $2"
-    aws cloudformation update-stack --stack-name "$2" --template-body file://infrastructure/base.yml --capabilities CAPABILITY_IAM --parameters ParameterKey=KeyName,ParameterValue="$3" ParameterKey=DatabaseName,ParameterValue="$DatabaseName" ParameterKey=DatabaseUsername,ParameterValue="$DatabaseUsername" ParameterKey=DatabaseUserPassword,ParameterValue="$DatabaseUserPassword" ParameterKey=BucketName,ParameterValue="$BucketName"
+    aws cloudformation update-stack --stack-name "$2" --template-body file://infrastructure/base.yml --capabilities CAPABILITY_IAM --parameters ParameterKey=KeyName,ParameterValue="$3" ParameterKey=DBName,ParameterValue="$DatabaseName" ParameterKey=DBUsername,ParameterValue="$DatabaseUsername" ParameterKey=DBPassword,ParameterValue="$DatabaseUserPassword" ParameterKey=BucketName,ParameterValue="$BucketName"
 fi
 

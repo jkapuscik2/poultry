@@ -1,0 +1,15 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      php: 7.3
+  build:
+    commands:
+      - composer install --no-progress --no-suggest
+  post_build:
+    commands:
+      - ./vendor/bin/phpunit
+artifacts:
+  files:
+    - '**/*'

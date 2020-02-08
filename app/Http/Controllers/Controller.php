@@ -3,14 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Poultry;
-use Illuminate\Support\Facades\Storage;
 use Laravel\Lumen\Routing\Controller as BaseController;
 
 class Controller extends BaseController
 {
+    private $poultryModel;
+
+    public function __construct(Poultry $poultry)
+    {
+        $this->poultryModel = $poultry;
+    }
+
     public function index()
     {
-        $models = Poultry::all();
+        $models = $this->poultryModel->getAll();
 
         return View("index",
             [

@@ -13,4 +13,8 @@ class Poultry extends Model
     public function photoUrl() {
         return Storage::disk('s3')->url($this->photo);
     }
+
+    public function getAll() {
+        return self::all();
+    }
 }
