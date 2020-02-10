@@ -12,4 +12,4 @@ rm -rf /var/www/poultry/tests/
 rm /var/www/poultry/artisan
 rm /var/www/poultry/composer.json
 rm /var/www/poultry/composer.lock
-rm /var/www/phplaravel/phpunit.xml
+rm /var/www/poultry/phpunit.xml
