@@ -10,7 +10,7 @@ In order to deploy application to AWS you can use manage.sh script with approper
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
-| `Command` | `string` | **Required**. Name of a command - crete, update, delete, help |
+| `Command` | `string` | **Required**. Name of a command - create, update, delete, help |
 | `StackName` | `string` | **Required**. Name CF stack |
 | `KeyName` | `string` | **Required**. Name of ec2 ssh access key |
 | `DatabaseName` | `string` | Name of RDS database. Default: "PoultryDB" |
