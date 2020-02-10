@@ -26,8 +26,12 @@ files:
   - source: /composer.lock
     destination: /var/www/poultry/
   - source: /phpunit.xml
-    destination: /var/www/phplaravel/
+    destination: /var/www/poultry/
 hooks:
+  BeforeInstall:
+    - location: scripts/cleanup.sh
+      timeout: 60
+      runas: root
   AfterInstall:
     - location: scripts/install_dependencies.sh
       timeout: 900
