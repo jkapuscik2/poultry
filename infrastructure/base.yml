@@ -108,18 +108,11 @@ Resources:
             packages:
               apt:
                 nginx: []
-                php7.2: []
-                php7.2-fpm: []
-                php7.2-common: []
-                php7.2-mysql: []
-                php7.2-gd: []
-                php7.2-xml: []
-                php7.2-mbstring: []
                 composer: []
                 zip: []
-                php7.2-zip: []
             sources:
               /var/www/poultry: "https://github.com/jkapuscik2/poultry/zipball/master"
+      DependsOn: Database
       Properties:
         InstanceType: t2.micro
         IamInstanceProfile: !Ref WebAppProfile
@@ -135,7 +128,11 @@ Resources:
                 #!/bin/bash
 
                 sudo apt-get -y update
+                sudo apt-get install -y software-properties-common
+                sudo add-apt-repository ppa:ondrej/php -y
+                sudo apt-get -y update
                 sudo apt-get -y remove apache2
+                sudo apt-get install -y php7.3 php7.3-fpm php7.3-common php7.3-mysql php7.3-gd php7.3-xml php7.3-mbstring php7.3-zip
                 cd /home/ubuntu
                 mkdir aws-cfn-bootstrap-latest
                 curl https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz | tar xz -C aws-cfn-bootstrap-latest --strip-components 1
@@ -159,7 +156,16 @@ Resources:
                 sed -i s/DB_DATABASE=/DB_DATABASE=${DB_DATABASE}/g .env
                 sed -i s/AWS_BUCKET=/AWS_BUCKET=${AWS_BUCKET}/g .env
                 sed -i s/AWS_DEFAULT_REGION=/AWS_DEFAULT_REGION=${AWS::Region}/g .env
+                php artisan migrate
+
                 service nginx restart
+
+                cd /home/ubuntu
+                apt install -y ruby
+                wget https://aws-codedeploy-${AWS::Region}.s3.amazonaws.com/latest/install
+                chmod +x ./install
+                ./install auto
+                systemctl start codedeploy-agent
             - DB_ENDPOINT:
                 Fn::GetAtt:
                   - Database
