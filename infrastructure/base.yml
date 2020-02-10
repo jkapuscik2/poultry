@@ -199,7 +199,7 @@ Resources:
       AvailabilityZones:
         Fn::GetAZs:
           !Ref AWS::Region
-      MinSize: 1
+      MinSize: 2
       MaxSize: 10
       LoadBalancerNames:
         - !Ref LoadBalancer
