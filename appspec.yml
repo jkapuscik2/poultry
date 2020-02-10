@@ -1,8 +1,32 @@
 version: 0.0
 os: linux
 files:
-  - source: /
-    destination: /var/www/poultry
+  - source: /app
+    destination: /var/www/poultry/app/
+  - source: /bootstrap
+    destination: /var/www/poultry/bootstrap/
+  - source: /database
+    destination: /var/www/poultry/database/
+  - source: /public
+    destination: /var/www/poultry/public/
+  - source: /resources
+    destination: /var/www/poultry/resources/
+  - source: /routes
+    destination: /var/www/poultry/routes/
+  - source: /scripts
+    destination: /var/www/poultry/scripts/
+  - source: /storage
+    destination: /var/www/poultry/storage/
+  - source: /tests
+    destination: /var/www/poultry/tests/
+  - source: /artisan
+    destination: /var/www/poultry/
+  - source: /composer.json
+    destination: /var/www/poultry/
+  - source: /composer.lock
+    destination: /var/www/poultry/
+  - source: /phpunit.xml
+    destination: /var/www/phplaravel/
 hooks:
   AfterInstall:
     - location: scripts/install_dependencies.sh
