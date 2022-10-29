@@ -6,7 +6,6 @@ Parameters:
     Type: AWS::EC2::KeyPair::KeyName
     ConstraintDescription: must be the name of an existing EC2 KeyPair.
   DBName:
-    Default: PoultryDB
     Description: MySQL database name
     Type: String
     MinLength: '1'
@@ -14,8 +13,6 @@ Parameters:
     AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
     ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
   DBUsername:
-    Default: admin
-    NoEcho: 'true'
     Description: Username for MySQL database access
     Type: String
     MinLength: '1'
@@ -23,7 +20,6 @@ Parameters:
     AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
     ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
   DBPassword:
-    Default: admin123456
     NoEcho: 'true'
     Description: Password for MySQL database access
     Type: String
@@ -32,7 +28,6 @@ Parameters:
     AllowedPattern: "[a-zA-Z0-9]*"
     ConstraintDescription: must contain only alphanumeric characters.
   BucketName:
-    Default: eggs-eggs-1234
     Type: String
 Resources:
   FilesBucket:
@@ -70,7 +65,7 @@ Resources:
       MasterUserPassword: !Ref DBPassword
       DBName: !Ref DBName
       Engine: mysql
-      EngineVersion: 5.7.26
+      EngineVersion: 8.0.30
       DBSecurityGroups:
         - Ref: DBSecurityGroup
   RDSAcessRole:
