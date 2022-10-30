@@ -2,7 +2,10 @@
 
 Sample application created with use of Lumen framwork. It is supposed to showcase possibility of automating horizontal scaling using AWS services. CloudFormation configuration is available in `/infrastructure` directory.
 
-More details available in the following [article](https://medium.com/@j.kapuscik2/autoscale-your-website-in-5-minutes-or-less-3c47f6483b72).
+More details available in the following articles:
+- [introduction](https://medium.com/@j.kapuscik2/autoscale-your-website-in-5-minutes-or-less-3c47f6483b72)
+- [CI/CD pipline](https://medium.com/gitconnected/deployment-to-aws-auto-scaling-group-8585178cdc8a)
+- [using AWS Fault Injection Symulator experiments](https://j-kapuscik2.medium.com/whats-aws-fault-injection-simulator-54edd298c904)
 
 ## Deploymant 
 
