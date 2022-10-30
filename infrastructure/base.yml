@@ -196,6 +196,10 @@ Resources:
           !Ref AWS::Region
       MinSize: 2
       MaxSize: 10
+      Tags:
+        - Key: app
+          Value: poultry
+          PropagateAtLaunch: Boolean
       LoadBalancerNames:
         - !Ref LoadBalancer
   WebServerScaleUpPolicy:
