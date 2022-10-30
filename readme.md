@@ -2,7 +2,10 @@
 
 Sample application created with use of Lumen framwork. It is supposed to showcase possibility of automating horizontal scaling using AWS services. CloudFormation configuration is available in `/infrastructure` directory.
 
-More details available in the following [article](https://medium.com/@j.kapuscik2/autoscale-your-website-in-5-minutes-or-less-3c47f6483b72).
+More details available in the following articles:
+- [introduction](https://medium.com/@j.kapuscik2/autoscale-your-website-in-5-minutes-or-less-3c47f6483b72)
+- [CI/CD pipline](https://medium.com/gitconnected/deployment-to-aws-auto-scaling-group-8585178cdc8a)
+- [using AWS Fault Injection Symulator experiments](https://j-kapuscik2.medium.com/whats-aws-fault-injection-simulator-54edd298c904)
 
 ## Deploymant 
 
@@ -15,8 +18,8 @@ In order to deploy application to AWS you can use manage.sh script with approper
 | `KeyName` | `string` | **Required**. Name of ec2 ssh access key |
 | `DatabaseName` | `string` | Name of RDS database. Default: "PoultryDB" |
 | `DatabaseUsername` | `string` | Name of RDS database admin user. Default: "admin" |
-| `DatabaseUserPassword` | `string` | Name CF stack. Default: "admin123456" |
-| `BucketName` | `string` | Name of S3 bucket. **Warning**. Name needs to be unique in whole AWS. Default "eggs-eggs-1234" |
+| `DatabaseUserPassword` | `string` | Name CF stack |
+| `BucketName` | `string` | Name of S3 bucket. **Warning**. Name needs to be unique in whole AWS |
 
 Parameters have to provided in proper order:
 
