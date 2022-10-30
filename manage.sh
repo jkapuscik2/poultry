@@ -65,13 +65,13 @@ fi
 if [ "$1" == "create" ]; then
     echo "Creating app stack: $2"
     aws cloudformation create-stack --stack-name "$2" --template-body file://infrastructure/base.yml --capabilities CAPABILITY_IAM --parameters ParameterKey=KeyName,ParameterValue="$3" ParameterKey=DBName,ParameterValue="$DatabaseName" ParameterKey=DBUsername,ParameterValue="$DatabaseUsername" ParameterKey=DBPassword,ParameterValue="$DatabaseUserPassword" ParameterKey=BucketName,ParameterValue="$BucketName"
-    echo "Creating FIS stack: $2"
+    echo "Creating FIS stack: $2-fis"
     aws cloudformation create-stack --stack-name "$2-fis" --template-body file://infrastructure/fis.yml --capabilities CAPABILITY_IAM
 fi
 
 if [ "$1" == "update" ]; then
     echo "Updating app stack: $2"
     aws cloudformation update-stack --stack-name "$2" --template-body file://infrastructure/base.yml --capabilities CAPABILITY_IAM --parameters ParameterKey=KeyName,ParameterValue="$3" ParameterKey=DBName,ParameterValue="$DatabaseName" ParameterKey=DBUsername,ParameterValue="$DatabaseUsername" ParameterKey=DBPassword,ParameterValue="$DatabaseUserPassword" ParameterKey=BucketName,ParameterValue="$BucketName"
-    echo "Updating FIS stack: $2"
+    echo "Updating FIS stack: $2-fis"
     aws cloudformation update-stack --stack-name "$2-fis" --template-body file://infrastructure/fis.yml --capabilities CAPABILITY_IAM
 fi
